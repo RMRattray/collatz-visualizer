@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collatz Visualizer</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <main class="layout">
+        <section class="canvasPane" aria-label="plot">
+          <canvas id="plot" class="plot" aria-label="plot canvas"></canvas>
+        </section>
+
+        <aside class="panel" aria-label="controls">
+          <div class="panelTop">
+            <div class="field">
+              <label class="label" for="xAxis">x-axis</label>
+              <select id="xAxis" class="select"></select>
+            </div>
+
+            <div class="field">
+              <label class="label" for="yAxis">y-axis</label>
+              <select id="yAxis" class="select"></select>
+            </div>
+
+            <div class="runRow">
+              <input
+                id="startN"
+                class="startN"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                step="1"
+                value="27"
+                aria-label="starting number"
+              />
+            </div>
+
+            <button id="run" class="runBtn" type="button" aria-label="run journey">
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+
+          <div class="panelBottom">
+            <button id="clear" class="clearBtn" type="button" aria-label="clear">
+              <span aria-hidden="true">X</span>
+            </button>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="./dist/main.js"></script>
+  </body>
+</html>
+

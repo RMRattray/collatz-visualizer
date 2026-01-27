@@ -1,0 +1,182 @@
+:root {
+  --bg: #0b0f17;
+  --panel: rgba(255, 255, 255, 0.06);
+  --panelBorder: rgba(255, 255, 255, 0.12);
+  --text: rgba(255, 255, 255, 0.92);
+  --muted: rgba(255, 255, 255, 0.70);
+  --controlBg: rgba(255, 255, 255, 0.08);
+  --controlBorder: rgba(255, 255, 255, 0.16);
+  --focus: rgba(125, 211, 252, 0.9);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 900px at 20% 0%, #121a2a 0%, var(--bg) 55%, #070a10 100%);
+  color: var(--text);
+}
+
+.app {
+  height: 100%;
+  padding: 24px;
+}
+
+.layout {
+  height: 100%;
+  display: flex;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.canvasPane {
+  flex: 1 1 auto;
+  min-width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid var(--panelBorder);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.plot {
+  width: min(78vh, 100%);
+  height: min(78vh, 100%);
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.panel {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 14px;
+  border: 1px solid var(--panelBorder);
+  background: var(--panel);
+  padding: 16px;
+}
+
+.panelTop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.2px;
+  text-transform: lowercase;
+}
+
+.select {
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--controlBorder);
+  background: var(--controlBg);
+  color: var(--text);
+  outline: none;
+}
+
+.select:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.25);
+}
+
+.runRow {
+  display: flex;
+  justify-content: center; /* centered horizontally within panel */
+  padding-top: 2px;
+}
+
+.startN {
+  width: 220px;
+  font-size: 28px;
+  padding: 10px 12px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px solid var(--controlBorder);
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--text);
+  outline: none;
+}
+
+.startN:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.25);
+}
+
+.runBtn {
+  width: 100%;
+  padding: 12px 12px;
+  font-size: 22px;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.5);
+  background: rgba(125, 211, 252, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  user-select: none;
+}
+
+.runBtn:hover {
+  background: rgba(125, 211, 252, 0.16);
+}
+
+.runBtn:active {
+  transform: translateY(1px);
+}
+
+.panelBottom {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.clearBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  user-select: none;
+}
+
+.clearBtn:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+@media (max-width: 980px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .canvasPane {
+    min-width: auto;
+  }
+
+  .panel {
+    width: 100%;
+  }
+}
