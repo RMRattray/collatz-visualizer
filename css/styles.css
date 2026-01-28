@@ -103,6 +103,11 @@ body {
   box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.25);
 }
 
+select option {
+  background: rgba(20,20,20,1.0);
+  color: var(--text);
+}
+
 .runRow {
   display: flex;
   justify-content: center; /* centered horizontally within panel */
