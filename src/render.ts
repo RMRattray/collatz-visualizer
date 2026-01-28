@@ -185,10 +185,14 @@ function drawJourney(
   const fullSegs = Math.floor(p);
   const frac = p - fullSegs;
 
-  pts.slice(0, fullSegs).forEach((val, ind, arr) => {
-    const next = arr[ind + 1];
-    if (next !== undefined)
-      drawArrow(ctx, val, next);
+  console.log(fullSegs);
+
+  pts.forEach((val, ind, arr) => {
+    if (ind < fullSegs) {
+      const next = arr[ind + 1];
+      if (next !== undefined)
+        drawArrow(ctx, val, next);
+    }
   });
 
   if (frac > 0 && fullSegs < segs) {
