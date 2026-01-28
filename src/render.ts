@@ -9,7 +9,7 @@ export type PlotState = {
 
 type PointPx = { x: number; y: number; mod3: 0 | 1 | 2 };
 
-const GRID_STEPS = 60; // number of grid cells; dots are GRID_STEPS+1 across
+// Dot radius & margin; grid density is dynamic.
 const DOT_RADIUS = 1.5;
 const PAD = 28;
 
@@ -32,33 +32,29 @@ function computeRanges(journeys: Journey[], xAxis: AxisOption, yAxis: AxisOption
   yMin: number;
   yMax: number;
 } {
-  let xMin = Infinity;
-  let xMax = -Infinity;
-  let yMin = Infinity;
-  let yMax = -Infinity;
+  let xMin = 1;
+  let xMax = 1;
+  let yMin = 1;
+  let yMax = 1;
 
   for (const j of journeys) {
     for (const m of j.metrics) {
       const x = axisValue(m, xAxis);
       const y = axisValue(m, yAxis);
-      if (x < xMin) xMin = x;
       if (x > xMax) xMax = x;
-      if (y < yMin) yMin = y;
       if (y > yMax) yMax = y;
     }
   }
 
-  if (!Number.isFinite(xMin)) {
-    xMin = 0;
-    xMax = 1;
-    yMin = 0;
-    yMax = 1;
-  }
-
-  if (xMin === xMax) xMax = xMin + 1;
-  if (yMin === yMax) yMax = yMin + 1;
-
   return { xMin, xMax, yMin, yMax };
+}
+
+function gridStepsForRanges(ranges: { xMin: number; xMax: number; yMin: number; yMax: number }): number {
+  // xMin and yMin are always 1, and maxima are ≥ 1.
+  // Start with 11 "steps" => 12 dots in each direction.
+  const maxAxis = Math.max(ranges.xMax, ranges.yMax, 1);
+  const stepsFromData = Math.max(0, Math.ceil(maxAxis) - 1);
+  return Math.max(11, stepsFromData);
 }
 
 function pointForMetrics(
@@ -66,35 +62,38 @@ function pointForMetrics(
   size: number,
   xAxis: AxisOption,
   yAxis: AxisOption,
-  ranges: { xMin: number; xMax: number; yMin: number; yMax: number }
+  ranges: { xMin: number; xMax: number; yMin: number; yMax: number },
+  gridSteps: number
 ): PointPx {
-  const step = (size - PAD * 2) / GRID_STEPS;
+  const step = (size - PAD * 2) / gridSteps;
 
   const xv = axisValue(m, xAxis);
   const yv = axisValue(m, yAxis);
 
-  const nx = (xv - ranges.xMin) / (ranges.xMax - ranges.xMin);
-  const ny = (yv - ranges.yMin) / (ranges.yMax - ranges.yMin);
+  const dx = ranges.xMax - ranges.xMin;
+  const dy = ranges.yMax - ranges.yMin;
+  const nx = dx === 0 ? 0 : (xv - ranges.xMin) / dx;
+  const ny = dy === 0 ? 0 : (yv - ranges.yMin) / dy;
 
-  const xi = Math.round(clamp01(nx) * GRID_STEPS);
-  const yi = Math.round(clamp01(ny) * GRID_STEPS);
+  const xi = Math.round(clamp01(nx) * gridSteps);
+  const yi = Math.round(clamp01(ny) * gridSteps);
 
   const x = PAD + xi * step;
   const y = size - PAD - yi * step; // invert so larger y is "up"
   return { x, y, mod3: m.mod3 };
 }
 
-function drawDotGrid(ctx: CanvasRenderingContext2D, size: number): void {
+function drawDotGrid(ctx: CanvasRenderingContext2D, size: number, gridSteps: number): void {
   ctx.clearRect(0, 0, size, size);
 
   // background
   ctx.fillStyle = "#070a10";
   ctx.fillRect(0, 0, size, size);
 
-  const step = (size - PAD * 2) / GRID_STEPS;
+  const step = (size - PAD * 2) / gridSteps;
   ctx.fillStyle = "rgba(255,255,255,0.85)";
-  for (let yi = 0; yi <= GRID_STEPS; yi++) {
-    for (let xi = 0; xi <= GRID_STEPS; xi++) {
+  for (let yi = 0; yi <= gridSteps; yi++) {
+    for (let xi = 0; xi <= gridSteps; xi++) {
       const x = PAD + xi * step;
       const y = PAD + yi * step;
       ctx.beginPath();
@@ -178,9 +177,10 @@ function drawJourney(
   yAxis: AxisOption,
   ranges: { xMin: number; xMax: number; yMin: number; yMax: number },
   color: string,
+  gridSteps: number,
   progress?: number
 ): void {
-  const pts = j.metrics.map((m) => pointForMetrics(m, size, xAxis, yAxis, ranges));
+  const pts = j.metrics.map((m) => pointForMetrics(m, size, xAxis, yAxis, ranges, gridSteps));
   if (pts.length === 0) return;
 
   ctx.strokeStyle = color;
@@ -192,12 +192,11 @@ function drawJourney(
   const fullSegs = Math.floor(p);
   const frac = p - fullSegs;
 
-  pts.slice(0, fullSegs).forEach( (val, ind, arr) => {
+  pts.slice(0, fullSegs).forEach((val, ind, arr) => {
     const next = arr[ind + 1];
     if (next !== undefined)
       drawArrow(ctx, val, next);
   });
-  // for (let i = 0; i < fullSegs; i++) if (pts[i] !== undefined && pts[i + 1] !== undefined) drawArrow(ctx, pts[i], pts[i + 1]);
 
   if (frac > 0 && fullSegs < segs) {
     const a = pts[fullSegs];
@@ -213,7 +212,7 @@ function drawJourney(
   }
 
   const pointsToDraw = progress === undefined ? pts.length : Math.min(pts.length, fullSegs + 1);
-  pts.slice(0, pointsToDraw).forEach( (val) => drawMod3Symbol(ctx, val));
+  pts.slice(0, pointsToDraw).forEach((val) => drawMod3Symbol(ctx, val));
 }
 
 export function redraw(
@@ -225,11 +224,12 @@ export function redraw(
   if (!ctx) return;
   const dpr = window.devicePixelRatio || 1;
   const size = canvas.width / dpr;
-  drawDotGrid(ctx, size);
-
   const ranges = computeRanges(state.journeys, state.xAxis, state.yAxis);
+  const gridSteps = gridStepsForRanges(ranges);
 
-  state.journeys.forEach( (val, idx) => {
+  drawDotGrid(ctx, size, gridSteps);
+
+  state.journeys.forEach((val, idx) => {
     const isAnimated = animated && animated.journeyIndex === idx;
     drawJourney(
       ctx,
@@ -239,6 +239,7 @@ export function redraw(
       state.yAxis,
       ranges,
       colorForJourney(idx),
+      gridSteps,
       isAnimated ? animated.progress : undefined
     );
   });
