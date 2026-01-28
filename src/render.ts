@@ -49,38 +49,12 @@ function computeRanges(journeys: Journey[], xAxis: AxisOption, yAxis: AxisOption
   return { xMin, xMax, yMin, yMax };
 }
 
+// Number of steps desired (or, one fewer than the number of dots desired)
 function gridStepsForRanges(ranges: { xMin: number; xMax: number; yMin: number; yMax: number }): number {
   // xMin and yMin are always 1, and maxima are ≥ 1.
   // Start with 11 "steps" => 12 dots in each direction.
-  const maxAxis = Math.max(ranges.xMax, ranges.yMax, 1);
-  const stepsFromData = Math.max(0, Math.ceil(maxAxis) - 1);
-  return Math.max(11, stepsFromData);
-}
-
-function pointForMetrics(
-  m: NumberMetrics,
-  size: number,
-  xAxis: AxisOption,
-  yAxis: AxisOption,
-  ranges: { xMin: number; xMax: number; yMin: number; yMax: number },
-  gridSteps: number
-): PointPx {
-  const step = (size - PAD * 2) / gridSteps;
-
-  const xv = axisValue(m, xAxis);
-  const yv = axisValue(m, yAxis);
-
-  const dx = ranges.xMax - ranges.xMin;
-  const dy = ranges.yMax - ranges.yMin;
-  const nx = dx === 0 ? 0 : (xv - ranges.xMin) / dx;
-  const ny = dy === 0 ? 0 : (yv - ranges.yMin) / dy;
-
-  const xi = Math.round(clamp01(nx) * gridSteps);
-  const yi = Math.round(clamp01(ny) * gridSteps);
-
-  const x = PAD + xi * step;
-  const y = size - PAD - yi * step; // invert so larger y is "up"
-  return { x, y, mod3: m.mod3 };
+  const maxAxis = Math.max(ranges.xMax, ranges.yMax);
+  return Math.max(11, maxAxis - 1);
 }
 
 function drawDotGrid(ctx: CanvasRenderingContext2D, size: number, gridSteps: number): void {
@@ -101,6 +75,23 @@ function drawDotGrid(ctx: CanvasRenderingContext2D, size: number, gridSteps: num
       ctx.fill();
     }
   }
+}
+
+function pointForMetrics(
+  m: NumberMetrics,
+  size: number,
+  xAxis: AxisOption,
+  yAxis: AxisOption,
+  gridSteps: number
+): PointPx {
+  const step = (size - PAD * 2) / gridSteps;
+
+  const xv = axisValue(m, xAxis) - 1;
+  const yv = axisValue(m, yAxis) - 1;
+
+  const x = PAD + xv * step;
+  const y = size - PAD - yv * step; // invert so larger y is "up"
+  return { x, y, mod3: m.mod3 };
 }
 
 function drawArrow(ctx: CanvasRenderingContext2D, a: PointPx, b: PointPx): void {
@@ -175,13 +166,15 @@ function drawJourney(
   j: Journey,
   xAxis: AxisOption,
   yAxis: AxisOption,
-  ranges: { xMin: number; xMax: number; yMin: number; yMax: number },
   color: string,
   gridSteps: number,
   progress?: number
 ): void {
-  const pts = j.metrics.map((m) => pointForMetrics(m, size, xAxis, yAxis, ranges, gridSteps));
+  const pts = j.metrics.map((m) => pointForMetrics(m, size, xAxis, yAxis, gridSteps));
   if (pts.length === 0) return;
+
+  console.log(j.metrics);
+  console.log(pts);
 
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
@@ -237,7 +230,6 @@ export function redraw(
       val,
       state.xAxis,
       state.yAxis,
-      ranges,
       colorForJourney(idx),
       gridSteps,
       isAnimated ? animated.progress : undefined
