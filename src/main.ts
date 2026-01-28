@@ -36,16 +36,12 @@ function allowedForYAxis(xAxis: AxisOption): AxisOption[] {
   return AXIS_OPTIONS.filter((o) => o !== xAxis);
 }
 
+// Recalculate metrics when loading from cookie
 function journeysFromCookie(): Journey[] {
   const raw = loadJourneysFromCookie();
-  const journeys: Journey[] = [];
-  for (const oddNumbers of raw) {
-    const filtered = oddNumbers.map((n) => toOdd(n)).filter((n) => n >= 1 && n % 2 === 1);
-    if (filtered.length === 0) continue;
-    const metrics = filtered.map((n) => metricsFor(n));
-    journeys.push({ oddNumbers: filtered, metrics });
-  }
-  return journeys;
+  return raw.map((oddNumbers: number[]) => {
+    return {oddNumbers: oddNumbers, metrics: oddNumbers.map((n) => metricsFor(n))};
+  });
 }
 
 function saveJourneys(journeys: Journey[]): void {
