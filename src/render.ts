@@ -43,6 +43,8 @@ function computeRanges(journeys: Journey[], xAxis: AxisOption, yAxis: AxisOption
       const y = axisValue(m, yAxis);
       if (x > xMax) xMax = x;
       if (y > yMax) yMax = y;
+      if (x == 0) xMin = 0;
+      if (y == 0) yMin = 0;
     }
   }
 
@@ -53,8 +55,8 @@ function computeRanges(journeys: Journey[], xAxis: AxisOption, yAxis: AxisOption
 function gridStepsForRanges(ranges: { xMin: number; xMax: number; yMin: number; yMax: number }): number {
   // xMin and yMin are always 1, and maxima are ≥ 1.
   // Start with 11 "steps" => 12 dots in each direction.
-  const maxAxis = Math.max(ranges.xMax, ranges.yMax);
-  return Math.max(11, maxAxis - 1);
+  const maxAxis = Math.max(ranges.xMax - ranges.xMin, ranges.yMax - ranges.yMin);
+  return Math.max(11, maxAxis);
 }
 
 function drawDotGrid(ctx: CanvasRenderingContext2D, size: number, gridSteps: number): void {
@@ -82,12 +84,13 @@ function pointForMetrics(
   size: number,
   xAxis: AxisOption,
   yAxis: AxisOption,
+  ranges: { xMin: number; xMax: number; yMin: number; yMax: number },
   gridSteps: number
 ): PointPx {
   const step = (size - PAD * 2) / gridSteps;
 
-  const xv = axisValue(m, xAxis) - 1;
-  const yv = axisValue(m, yAxis) - 1;
+  const xv = axisValue(m, xAxis) - ranges.xMin;
+  const yv = axisValue(m, yAxis) - ranges.yMin;
 
   const x = PAD + xv * step;
   const y = size - PAD - yv * step; // invert so larger y is "up"
@@ -168,9 +171,10 @@ function drawJourney(
   yAxis: AxisOption,
   color: string,
   gridSteps: number,
-  progress?: number
+  ranges: { xMin: number; xMax: number; yMin: number; yMax: number },
+  progress?: { journeyIndex: number; progress: number }
 ): void {
-  const pts = j.metrics.map((m) => pointForMetrics(m, size, xAxis, yAxis, gridSteps));
+  const pts = j.metrics.map((m) => pointForMetrics(m, size, xAxis, yAxis, ranges, gridSteps));
   if (pts.length === 0) return;
 
   console.log(j.metrics);
@@ -181,7 +185,7 @@ function drawJourney(
   ctx.lineWidth = 2;
 
   const segs = pts.length - 1;
-  const p = progress === undefined ? segs : Math.max(0, Math.min(segs, progress));
+  const p = progress === undefined ? segs : Math.max(0, Math.min(segs, progress.progress));
   const fullSegs = Math.floor(p);
   const frac = p - fullSegs;
 
@@ -236,7 +240,8 @@ export function redraw(
       state.yAxis,
       colorForJourney(idx),
       gridSteps,
-      isAnimated ? animated.progress : undefined
+      ranges,
+      isAnimated ? { journeyIndex: animated.journeyIndex, progress: animated.progress } : undefined
     );
   });
 }
