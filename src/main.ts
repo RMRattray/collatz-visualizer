@@ -115,6 +115,7 @@ function main(): void {
         }
       }
     }
+    journeyBox.scrollTop = journeyBox.scrollHeight;
   }
 
   const resizeObserver = new ResizeObserver(() => {
