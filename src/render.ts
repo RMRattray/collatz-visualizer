@@ -177,9 +177,6 @@ function drawJourney(
   const pts = j.metrics.map((m) => pointForMetrics(m, size, xAxis, yAxis, ranges, gridSteps));
   if (pts.length === 0) return;
 
-  console.log(j.metrics);
-  console.log(pts);
-
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
   ctx.lineWidth = 2;
@@ -188,8 +185,6 @@ function drawJourney(
   const p = progress === undefined ? segs : Math.max(0, Math.min(segs, progress.progress));
   const fullSegs = Math.floor(p);
   const frac = p - fullSegs;
-
-  console.log(fullSegs);
 
   pts.forEach((val, ind, arr) => {
     if (ind < fullSegs) {

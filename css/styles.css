@@ -151,6 +151,67 @@ select option {
   transform: translateY(1px);
 }
 
+.showJourneyRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.showJourneyRow input {
+  width: 18px;
+  height: 18px;
+  accent-color: rgba(125, 211, 252, 0.8);
+  cursor: pointer;
+}
+
+.journeyBox {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid var(--controlBorder);
+  background: var(--controlBg);
+  padding: 10px;
+}
+
+.journeyStep {
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--controlBorder);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.journeyStep.current {
+  border-color: rgba(125, 211, 252, 0.5);
+  background: rgba(125, 211, 252, 0.1);
+}
+
+.journeyStep .decimal {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.journeyStep .binary {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
 .panelBottom {
   display: flex;
   justify-content: flex-end;

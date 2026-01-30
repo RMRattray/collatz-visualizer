@@ -55,6 +55,8 @@ function main(): void {
   const startN = mustGet<HTMLInputElement>("startN");
   const runBtn = mustGet<HTMLButtonElement>("run");
   const clearBtn = mustGet<HTMLButtonElement>("clear");
+  const showJourney = mustGet<HTMLInputElement>("showJourney");
+  const journeyBox = mustGet<HTMLDivElement>("journeyBox");
 
   let xAxis: AxisOption = "binary length";
   let yAxis: AxisOption = "ones";
@@ -65,6 +67,26 @@ function main(): void {
   const draw = (animated?: { journeyIndex: number; progress: number }) => {
     redraw(canvas, { xAxis, yAxis, journeys }, animated);
   };
+
+  function updateJourneyBox(journey: Journey | null, currentIndex?: number): void {
+    journeyBox.innerHTML = "";
+    if (!showJourney.checked || !journey) return;
+    const odds = journey.oddNumbers;
+    odds.forEach((n, i) => {
+      const step = document.createElement("div");
+      step.className = "journeyStep" + (i === currentIndex ? " current" : "");
+      step.setAttribute("role", "listitem");
+      const dec = document.createElement("span");
+      dec.className = "decimal";
+      dec.textContent = String(n);
+      const bin = document.createElement("span");
+      bin.className = "binary";
+      bin.textContent = n.toString(2);
+      step.appendChild(dec);
+      step.appendChild(bin);
+      journeyBox.appendChild(step);
+    });
+  }
 
   const resizeObserver = new ResizeObserver(() => {
     const parent = canvas.parentElement;
@@ -105,9 +127,14 @@ function main(): void {
 
   function animateNewJourney(journeyIndex: number, points: number): void {
     cancelAnim();
+    const journey = journeys[journeyIndex];
     const segs = Math.max(0, points - 1);
     if (segs === 0) {
       draw();
+      if (journey) {
+        startN.value = String(journey.oddNumbers[journey.oddNumbers.length - 1] ?? "");
+        updateJourneyBox(journey);
+      }
       return;
     }
 
@@ -119,13 +146,18 @@ function main(): void {
       const t = Math.min(1, (now - start) / totalMs);
       const progress = t * segs;
       draw({ journeyIndex, progress });
+      if (journey) {
+        const currentIndex = Math.min(journey.oddNumbers.length - 1, Math.floor(progress));
+        startN.value = String(journey.oddNumbers[currentIndex] ?? "");
+        updateJourneyBox(journey, currentIndex);
+      }
       if (t < 1) animRaf = requestAnimationFrame(tick);
       else animRaf = undefined;
     };
     animRaf = requestAnimationFrame(tick);
   }
 
-  runBtn.addEventListener("click", () => {
+  const go = () => {
     cancelAnim();
 
     const raw = startN.value.trim();
@@ -140,7 +172,18 @@ function main(): void {
     journeys = [...journeys, j];
     saveJourneys(journeys);
     draw();
+    updateJourneyBox(j, undefined);
     animateNewJourney(journeys.length - 1, j.metrics.length);
+  }
+
+  showJourney.addEventListener("change", () => {
+    const last = journeys.length > 0 ? journeys[journeys.length - 1] : null;
+    if (last) updateJourneyBox(last);
+  });
+
+  runBtn.addEventListener("click", go);
+  startN.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") go();
   });
 
   clearBtn.addEventListener("click", () => {

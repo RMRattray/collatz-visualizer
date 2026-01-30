@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Collatz Visualizer</title>
     <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="canonical" href="https://nationalrecordingregistry.net/portfolio/collatz" />
   </head>
   <body>
     <div id="app" class="app">
@@ -41,7 +42,14 @@
             <button id="run" class="runBtn" type="button" aria-label="run journey">
               <span aria-hidden="true">→</span>
             </button>
+
+            <label class="showJourneyRow">
+              <input id="showJourney" type="checkbox" aria-label="show journey" />
+              <span>Show journey</span>
+            </label>
           </div>
+
+          <div id="journeyBox" class="journeyBox" aria-label="journey numbers"></div>
 
           <div class="panelBottom">
             <button id="clear" class="clearBtn" type="button" aria-label="clear">
