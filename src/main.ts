@@ -69,23 +69,52 @@ function main(): void {
   };
 
   function updateJourneyBox(journey: Journey | null, currentIndex?: number): void {
-    journeyBox.innerHTML = "";
     if (!showJourney.checked || !journey) return;
-    const odds = journey.oddNumbers;
-    odds.forEach((n, i) => {
-      const step = document.createElement("div");
-      step.className = "journeyStep" + (i === currentIndex ? " current" : "");
-      step.setAttribute("role", "listitem");
-      const dec = document.createElement("span");
-      dec.className = "decimal";
-      dec.textContent = String(n);
-      const bin = document.createElement("span");
-      bin.className = "binary";
-      bin.textContent = n.toString(2);
-      step.appendChild(dec);
-      step.appendChild(bin);
-      journeyBox.appendChild(step);
-    });
+    console.log("Calling updateJourney with index", currentIndex);
+    if (currentIndex === undefined) {
+      journeyBox.innerHTML = "";
+      const odds = journey.oddNumbers;
+      odds.forEach((n, i) => {
+        const step = document.createElement("div");
+        step.className = "journeyStep" + (i === currentIndex ? " current" : "");
+        step.setAttribute("role", "listitem");
+        const dec = document.createElement("span");
+        dec.className = "decimal";
+        dec.textContent = String(n);
+        const bin = document.createElement("span");
+        bin.className = "binary";
+        bin.textContent = n.toString(2);
+        step.appendChild(dec);
+        step.appendChild(bin);
+        journeyBox.appendChild(step);
+      });
+    }
+    else {
+      if (currentIndex == 0) {
+        journeyBox.innerHTML = "";
+      }
+      if (currentIndex == journeyBox.childElementCount) {
+        if (journeyBox.lastElementChild) {
+          journeyBox.lastElementChild.className = "journeyStep";
+        }
+        const n = journey.oddNumbers[currentIndex];
+        if (n) {
+          const step = document.createElement("div");
+          step.setAttribute("role", "listitem");
+          step.className = "journeyStep current";
+          step.setAttribute("role", "listitem");
+          const dec = document.createElement("span");
+          dec.className = "decimal";
+          dec.textContent = String(n);
+          const bin = document.createElement("span");
+          bin.className = "binary";
+          bin.textContent = n.toString(2);
+          step.appendChild(dec);
+          step.appendChild(bin);
+          journeyBox.appendChild(step);
+        }
+      }
+    }
   }
 
   const resizeObserver = new ResizeObserver(() => {
@@ -172,7 +201,6 @@ function main(): void {
     journeys = [...journeys, j];
     saveJourneys(journeys);
     draw();
-    updateJourneyBox(j, undefined);
     animateNewJourney(journeys.length - 1, j.metrics.length);
   }
 
@@ -191,6 +219,7 @@ function main(): void {
     journeys = [];
     clearJourneysCookie();
     draw();
+    journeyBox.innerHTML = "";
   });
 
   // Ensure an initial canvas size even before ResizeObserver fires.
