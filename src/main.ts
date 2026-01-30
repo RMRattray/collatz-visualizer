@@ -1,5 +1,5 @@
 import { collatzOddJourney, metricsFor, toOdd } from "./collatz.js";
-import { clearJourneysCookie, loadJourneysFromCookie, saveJourneysToCookie } from "./storage.js";
+// import { clearJourneysCookie, loadJourneysFromCookie, saveJourneysToCookie } from "./storage.js";
 import { redraw } from "./render.js";
 import { AXIS_OPTIONS, type AxisOption, type Journey } from "./types.js";
 
@@ -36,17 +36,17 @@ function allowedForYAxis(xAxis: AxisOption): AxisOption[] {
   return AXIS_OPTIONS.filter((o) => o !== xAxis);
 }
 
-// Recalculate metrics when loading from cookie
-function journeysFromCookie(): Journey[] {
-  const raw = loadJourneysFromCookie();
-  return raw.map((oddNumbers: number[]) => {
-    return {oddNumbers: oddNumbers, metrics: oddNumbers.map((n) => metricsFor(n))};
-  });
-}
+// // Recalculate metrics when loading from cookie
+// function journeysFromCookie(): Journey[] {
+//   const raw = loadJourneysFromCookie();
+//   return raw.map((oddNumbers: number[]) => {
+//     return {oddNumbers: oddNumbers, metrics: oddNumbers.map((n) => metricsFor(n))};
+//   });
+// }
 
-function saveJourneys(journeys: Journey[]): void {
-  saveJourneysToCookie(journeys.map((j) => j.oddNumbers));
-}
+// function saveJourneys(journeys: Journey[]): void {
+//   saveJourneysToCookie(journeys.map((j) => j.oddNumbers));
+// }
 
 function main(): void {
   const canvas = mustGet<HTMLCanvasElement>("plot");
@@ -61,7 +61,7 @@ function main(): void {
   let xAxis: AxisOption = "binary length";
   let yAxis: AxisOption = "ones";
 
-  let journeys: Journey[] = journeysFromCookie();
+  let journeys: Journey[] = [];
   let animRaf: number | undefined;
 
   const draw = (animated?: { journeyIndex: number; progress: number }) => {
@@ -200,7 +200,7 @@ function main(): void {
     const j: Journey = { oddNumbers: oddJourney, metrics };
 
     journeys = [...journeys, j];
-    saveJourneys(journeys);
+    // saveJourneys(journeys);
     draw();
     animateNewJourney(journeys.length - 1, j.metrics.length);
   }
@@ -218,7 +218,7 @@ function main(): void {
   clearBtn.addEventListener("click", () => {
     cancelAnim();
     journeys = [];
-    clearJourneysCookie();
+    // clearJourneysCookie();
     draw();
     journeyBox.innerHTML = "";
   });
